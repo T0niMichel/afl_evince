@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
-IN=input
-OUT=output
-MOUNT=~/
+#FUZZ_ID=evince
+IN=/data/input
+OUT=/data/output
+MOUNT=.
 AFL_IMAGE=tonimichel/afl_evince
+
 
 FUZZ_TARGET=/usr/local/bin/evince
 
-docker run -ti  -e DISPLAY=$DISPLAY \
-       -v /tmp/.X11-unix:/tmp/.X11-unix \
-       -v $MOUNT:/data \
-       -d --name=${FUZZ_ID}${i}\
-       $AFL_IMAGE \
-       afl-fuzz -i $IN -o $OUT -S ${FUZZ_ID}${i} $FUZZ_TARGET
+
+docker run -m 8g -ti -e DISPLAY=$DISPLAY \
+       -v /tmp/.X11-unix:/tmp/.X11-unix  \
+       -v .:/data \
+       --ulimit core=-1 tonimichel/afl_evince \
+       afl-fuzz -Z 0-3 -t 100+ms -m 2048 -i $IN  -o $OUT  $FUZZ_TARGET
