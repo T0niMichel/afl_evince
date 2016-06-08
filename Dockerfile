@@ -1,13 +1,11 @@
 FROM debian:jessie
-
-MAINTAINER Toni Michel <TM@KUNGF.OOO>
-
-ENV REFRESHED_AT 2016-06-07
-
+MAINTAINER Toni Michel <TM@TONIMICHEL.DE>
+ENV REFRESHED_AT 2016-06-08
 ENV DEBIAN_FRONTEND noninteractive
 
 ENV LATEST_AFL_PACKAGE http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
 
+# Base
 RUN \
     echo "deb http://ftp.de.debian.org/debian/ jessie main contrib non-free" > /etc/apt/sources.list \
     && echo "deb-src http://ftp.de.debian.org/debian/ jessie main contrib non-free" >> /etc/apt/sources.list \
@@ -20,6 +18,7 @@ RUN \
         --no-install-recommends \
         --no-install-suggests \
     libgtk2.0-dev \
+    libgtk-3-dev \
     autoconf \
     automake \
     gcc \
@@ -27,6 +26,7 @@ RUN \
     make \
     nasm \
     subversion \
+    git \
     wget \
     apt-utils
 
@@ -58,7 +58,7 @@ RUN \
 
 
 
-# Get evince source including dependencies and configure it.
+# Get evince dependencies for evince.
 RUN \
    mkdir /BUILD \
    && cd /BUILD/ \
@@ -66,28 +66,20 @@ RUN \
         --yes \
         --no-install-recommends \
         --no-install-suggests evince
+
+# Get evince (3.14.1) and prepare everything so we can fuzz along
 RUN \
    cd /BUILD/ \
-   && apt-get install --yes libgtk2.0-dev \
    && ln -s /usr/bin/gtk-update-icon-cache-3.0 /usr/bin/gtk-update-icon-cache \
-   && apt-get source \
-        --yes \
-        --no-install-recommends \
-        --no-install-suggests evince
-
-
-# Configure evince to be compiled with afl compilers
-RUN \
-   cd /BUILD/evince-3.14.1/ \
+   && git clone git://git.gnome.org/evince \
+   && cd /BUILD/evince \
+   && git checkout tags/3.14.1
+   && autoreconf -fiv \
    && AFL_HARDEN=1 \
       CC=/usr/local/bin/afl-gcc \
       CXX=/usr/local/bin/afl-g++ ./configure --disable-shared \
-   && make -j 4
-
-# Install
-RUN \
-  cd /BUILD/evince-3.14.1/ \
-  && make install
+   && make -j 4\
+   && make install
 
 # Clean up packages.
 RUN \
