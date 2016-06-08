@@ -73,7 +73,7 @@ RUN \
    && ln -s /usr/bin/gtk-update-icon-cache-3.0 /usr/bin/gtk-update-icon-cache \
    && git clone git://git.gnome.org/evince \
    && cd /BUILD/evince \
-   && git checkout tags/3.14.1
+   && git checkout tags/3.14.1 \
    && autoreconf -fiv \
    && AFL_HARDEN=1 \
       CC=/usr/local/bin/afl-gcc \
