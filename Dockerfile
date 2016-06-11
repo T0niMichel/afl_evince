@@ -75,10 +75,10 @@ RUN \
    && cd /BUILD/evince \
    && git checkout tags/3.14.1 \
    && autoreconf -fiv \
-   && AFL_HARDEN=1 \
-      CC=/usr/local/bin/afl-gcc \
+   && CC=/usr/local/bin/afl-gcc \
       CXX=/usr/local/bin/afl-g++ ./configure --disable-shared \
-   && make -j 4\
+   && AFL_HARDEN=1 \
+      make -j 4 \
    && make install
 
 # Clean up packages.
